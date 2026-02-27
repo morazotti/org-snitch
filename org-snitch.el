@@ -39,6 +39,7 @@ Relative to project root."
 
 (defcustom org-snitch-capture-templates
   '(("t" . "Tasks")
+    ("n" . "Notes")
     ("i" . "Issues"))
   "List of sub-templates for project capture.
 Each element is a cons cell (KEY . DESCRIPTION)."
