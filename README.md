@@ -41,6 +41,9 @@ You can customize `org-snitch` behavior by setting the following variables **bef
   ;; Change the prefix key for all project templates (default is "p")
   (org-snitch-capture-key "p")
 
+  ;; Treat submodules as independent projects (default is t)
+  (org-snitch-independent-submodules t)
+
   ;; Define your project-specific capture sub-templates
   ;; Format: (KEY . DESCRIPTION) -> targets a heading of DESCRIPTION
   (org-snitch-capture-templates

@@ -36,16 +36,33 @@ Relative to project root."
 
 (defcustom org-snitch-capture-templates
   '(("t" . "Tasks")
-    ("b" . "Bugs"))
+    ("i" . "Issues"))
   "List of sub-templates for project capture.
 Each element is a cons cell (KEY . DESCRIPTION)."
   :type '(alist :key-type string :value-type string)
   :group 'org-snitch)
 
+(defcustom org-snitch-independent-submodules t
+  "If non-nil, treat git submodules as independent projects.
+This ensures `project.org` is kept inside the submodule rather
+than the parent project. Internally, this let-binds
+`project-vc-merge-submodules' to nil during project discovery."
+  :type 'boolean
+  :group 'org-snitch)
+
+(defun org-snitch--get-project-root ()
+  "Find the project root, respecting `org-snitch-independent-submodules'."
+  (require 'project)
+  (let ((project-vc-merge-submodules (not org-snitch-independent-submodules)))
+    (if-let ((project (project-current)))
+        (if (fboundp 'project-root)
+            (project-root project)
+          (cdr project))
+      (user-error "Not inside a project!"))))
+
 (defun org-snitch-context-p ()
   "Return non-nil if inside a project. Used for capture context."
-  (and (fboundp 'project-current)
-       (project-current)))
+  (ignore-errors (org-snitch--get-project-root)))
 
 (defun org-snitch--generated-templates ()
   "Generate `org-capture-templates' entries for org-snitch."
@@ -238,10 +255,7 @@ Each element is a cons cell (KEY . DESCRIPTION)."
 ;;;###autoload
 (defun org-snitch-find-project-file ()
   "Returns the path for `org-snitch-target-file'."
-  (require 'project)
-  (if-let ((project (project-current)))
-      (expand-file-name org-snitch-target-file (project-root project))
-    (user-error "Not inside a project!")))
+  (expand-file-name org-snitch-target-file (org-snitch--get-project-root)))
 
 ;;;###autoload
 (define-minor-mode org-snitch-mode
