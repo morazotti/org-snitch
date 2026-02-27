@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        emacs_version:
+          - '28.1'
+          - '28.2'
+          - '29.1'
+          - '29.2'
+          - '29.3'
+          - 'snapshot'
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: purcell/setup-emacs@master
+      with:
+        version: ${{ matrix.emacs_version }}
+
+    - name: Byte-compile
+      run: emacs -Q --batch -L . -f batch-byte-compile org-snitch.el

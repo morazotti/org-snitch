@@ -3,13 +3,16 @@
 ;; Copyright (C) 2026  Nícolas Morazotti
 
 ;; Author: Nícolas Morazotti
-;; Keywords: org, project
+;; Maintainer: Nícolas Morazotti
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "28.1"))
+;; Keywords: org, project, outlines
+;; URL: https://github.com/morazotti/org-snitch
 
 ;;; Commentary:
 
 ;; Provides project-specific org-capture utilizing project.el.
 ;; Similar to tsod's snitch library written in Go.
-;; URL: https://github.com/morazotti/org-snitch
 
 
 ;;; Code:

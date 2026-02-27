@@ -1,5 +1,5 @@
 # org-snitch
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![CI](https://github.com/morazotti/org-snitch/actions/workflows/test.yml/badge.svg)](https://github.com/morazotti/org-snitch/actions/workflows/test.yml) [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 `org-snitch` is an Emacs package that brings powerful, context-aware `org-capture` templates natively integrated with `project.el`. It's inspired by the tsod snitch Go library, bringing project-linked notes, tasks, and bugs into a single centralized project file with beautiful local link rendering across your codebase.
 
