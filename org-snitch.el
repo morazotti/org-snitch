@@ -70,7 +70,7 @@ than the parent project.  Internally, this let-binds
 (defun org-snitch--generated-templates ()
   "Generate `org-capture-templates' entries for org-snitch."
   (cons `(,org-snitch-capture-key "Project")
-        (mapcar (lambda (tpl)
+        (mapcar #'(lambda (tpl)
                   (let ((key (car tpl))
                         (desc (cdr tpl)))
                     `(,(concat org-snitch-capture-key key) ,desc entry
@@ -82,7 +82,7 @@ than the parent project.  Internally, this let-binds
 (defun org-snitch--generated-contexts ()
   "Generate `org-capture-templates-contexts' entries for org-snitch."
   (cons `(,org-snitch-capture-key (org-snitch-context-p))
-        (mapcar (lambda (tpl)
+        (mapcar #'(lambda (tpl)
                   `(,(concat org-snitch-capture-key (car tpl)) (org-snitch-context-p)))
                 org-snitch-capture-templates)))
 
@@ -94,12 +94,12 @@ than the parent project.  Internally, this let-binds
   (unless (boundp 'org-capture-templates-contexts)
     (setq org-capture-templates-contexts nil))
   (let ((keys (cons org-snitch-capture-key
-                    (mapcar (lambda (tpl) (concat org-snitch-capture-key (car tpl)))
+                    (mapcar #'(lambda (tpl) (concat org-snitch-capture-key (car tpl)))
                             org-snitch-capture-templates))))
     (setq org-capture-templates
-          (seq-remove (lambda (x) (member (car x) keys)) org-capture-templates))
+          (seq-remove #'(lambda (x) (member (car x) keys)) org-capture-templates))
     (setq org-capture-templates-contexts
-          (seq-remove (lambda (x) (member (car x) keys)) org-capture-templates-contexts)))
+          (seq-remove #'(lambda (x) (member (car x) keys)) org-capture-templates-contexts)))
   (setq org-capture-templates (append org-capture-templates (org-snitch--generated-templates)))
   (setq org-capture-templates-contexts (append org-capture-templates-contexts (org-snitch--generated-contexts))))
 
@@ -174,14 +174,14 @@ ACTION is `entered`."
         (org-snitch--make-overlays)
         (add-hook 'after-save-hook #'org-snitch--make-overlays nil t)
         (add-hook 'after-change-functions
-                  (lambda (&rest _)
+                  #'(lambda (&rest _)
                     (org-snitch--clear-overlays)
                     (org-snitch--make-overlays)) nil t))
     (cursor-sensor-mode -1)
     (org-snitch--clear-overlays)
     (remove-hook 'after-save-hook #'org-snitch--make-overlays t)
     (remove-hook 'after-change-functions
-                 (lambda (&rest _)
+                 #'(lambda (&rest _)
                    (org-snitch--clear-overlays)
                    (org-snitch--make-overlays)) t)))
 
@@ -199,7 +199,7 @@ ACTION is `entered`."
   (with-current-buffer buffer
     (let ((max-num 0))
       (org-map-entries
-       (lambda ()
+       #'(lambda ()
          (when-let ((num (org-entry-get nil "TASK_NUM")))
            (setq max-num (max max-num (string-to-number num)))))
        nil 'file)
