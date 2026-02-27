@@ -48,7 +48,7 @@ Each element is a cons cell (KEY . DESCRIPTION)."
 (defcustom org-snitch-independent-submodules t
   "If non-nil, treat git submodules as independent projects.
 This ensures `project.org` is kept inside the submodule rather
-than the parent project. Internally, this let-binds
+than the parent project.  Internally, this let-binds
 `project-vc-merge-submodules' to nil during project discovery."
   :type 'boolean
   :group 'org-snitch)
@@ -64,7 +64,7 @@ than the parent project. Internally, this let-binds
       (user-error "Not inside a project!"))))
 
 (defun org-snitch-context-p ()
-  "Return non-nil if inside a project. Used for capture context."
+  "Return non-nil if inside a project.  Used for capture context."
   (ignore-errors (org-snitch--get-project-root)))
 
 (defun org-snitch--generated-templates ()
@@ -103,13 +103,18 @@ than the parent project. Internally, this let-binds
   (setq org-capture-templates (append org-capture-templates (org-snitch--generated-templates)))
   (setq org-capture-templates-contexts (append org-capture-templates-contexts (org-snitch--generated-contexts))))
 
-(defvar org-snitch--source-buffer nil)
-(defvar org-snitch--region-beg-marker nil)
-(defvar org-snitch--region-end-marker nil)
-(defvar org-snitch--key nil)
+(defvar org-snitch--source-buffer nil
+  "Buffer where `org-capture' was invoked.")
+(defvar org-snitch--region-beg-marker nil
+  "Marker storing the start of the active region before capture.")
+(defvar org-snitch--region-end-marker nil
+  "Marker storing the end of the active region before capture.")
+(defvar org-snitch--key nil
+  "The template key used for the current capture.")
 
 (defvar org-snitch-link-overlay-regexp
-  (rx "[[" (one-or-more (not "]")) "][" (group (one-or-more (not "]"))) "]]"))
+  (rx "[[" (one-or-more (not "]")) "][" (group (one-or-more (not "]"))) "]]")
+  "Regular expression for matching simple bracket links `[[id:hash][desc]]'.")
 
 (defface org-snitch-link-face
   '((t :foreground "orange"
@@ -119,6 +124,8 @@ than the parent project. Internally, this let-binds
   :group 'org-snitch)
 
 (defun org-snitch--make-overlays ()
+  "Create visual overlays for `org-mode' links in the current buffer.
+Matches `org-snitch-link-overlay-regexp' and applies `org-snitch-link-face'."
   (save-excursion
     (goto-char (point-min))
     (while (re-search-forward org-snitch-link-overlay-regexp nil t)
@@ -131,10 +138,13 @@ than the parent project. Internally, this let-binds
                      (list #'org-snitch--cursor-sensor))))))
 
 (defun org-snitch--clear-overlays ()
+  "Remove all `org-snitch-link' overlays from the current buffer."
   (remove-overlays (point-min) (point-max) 'org-snitch-link t))
 
 (defun org-snitch--cursor-sensor (_window old-pos action)
-  "Shows real link when cursor inside, restores overlay when exit."
+  "Show real link when cursor inside, restoring overlay when exiting.
+_WINDOW is unused.  OLD-POS is the previous cursor position.
+ACTION is `entered`."
   (if (eq action 'entered)
       (dolist (ov (overlays-at (point)))
         (when (overlay-get ov 'org-snitch-link)
@@ -185,7 +195,7 @@ than the parent project. Internally, this let-binds
       (org-set-property "ID" hash))))
 
 (defun org-snitch--next-task-num (buffer)
-  "Returns the next TASK_NUM for the project in BUFFER."
+  "Return the next TASK_NUM for the project in BUFFER."
   (with-current-buffer buffer
     (let ((max-num 0))
       (org-map-entries
@@ -197,6 +207,8 @@ than the parent project. Internally, this let-binds
 
 ;;;###autoload
 (defun org-snitch-store-region-before (&rest _)
+  "Store the active region boundaries before capturing.
+This runs as `advice-add' :before on `org-capture'."
   (when (and (use-region-p) (null org-snitch--source-buffer))
     (setq org-snitch--source-buffer (current-buffer)
           org-snitch--region-beg-marker (copy-marker (region-beginning))
@@ -204,10 +216,14 @@ than the parent project. Internally, this let-binds
 
 ;;;###autoload
 (defun org-snitch-store-key ()
+  "Store the capture key currently being used in `org-snitch--key'."
   (setq org-snitch--key (plist-get org-capture-current-plist :key)))
 
 ;;;###autoload
 (defun org-snitch-insert-link ()
+  "Replace captured source region with a generated org-id link.
+This triggers after finalizing the capture buffer if the capture
+originates from a valid region and template key."
   (when (and org-snitch--source-buffer
              org-snitch--region-beg-marker
              org-snitch--region-end-marker
@@ -242,6 +258,7 @@ than the parent project. Internally, this let-binds
 
 ;;;###autoload
 (defun org-snitch-cleanup ()
+  "Clean up `org-snitch' internal state variables post-capture."
   (setq org-snitch--source-buffer nil
         org-snitch--region-beg-marker nil
         org-snitch--region-end-marker nil
@@ -249,7 +266,7 @@ than the parent project. Internally, this let-binds
 
 ;;;###autoload
 (defun org-snitch-update-id-locations ()
-  "Atualiza o índice de IDs para o project.org atual após capture de projeto."
+  "Update `org-id-locations' for the target project file after capture."
   (when (and org-snitch--key
              (string-prefix-p org-snitch-capture-key org-snitch--key))
     (org-id-update-id-locations
@@ -257,12 +274,12 @@ than the parent project. Internally, this let-binds
 
 ;;;###autoload
 (defun org-snitch-find-project-file ()
-  "Returns the path for `org-snitch-target-file'."
+  "Return the path for `org-snitch-target-file'."
   (expand-file-name org-snitch-target-file (org-snitch--get-project-root)))
 
 ;;;###autoload
 (define-minor-mode org-snitch-mode
-  "Global minor mode to enable org-snitch project hooks for org-capture."
+  "Global minor mode to enable org-snitch project hooks for `org-capture'."
   :global t
   :lighter " snitch"
   (if org-snitch-mode
