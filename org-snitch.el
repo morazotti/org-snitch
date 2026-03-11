@@ -220,7 +220,8 @@ deterministc IDs based on heading text, and assigning sequential numbers."
           (org-set-property "ID" hash)
           (unless (org-entry-get nil "TASK_NUM")
             (setq task-num (org-snitch--next-task-num (current-buffer)))
-            (org-set-property "TASK_NUM" (number-to-string task-num))))))))
+            (org-set-property "TASK_NUM" (number-to-string task-num)))
+          (save-buffer))))))
 
 (defun org-snitch--next-task-num (buffer)
   "Return the next TASK_NUM for the project in BUFFER."
