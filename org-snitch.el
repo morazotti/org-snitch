@@ -370,6 +370,27 @@ for occurrences of the selected task's ID using `xref'."
      nil)))
 
 ;;;###autoload
+(defun org-snitch-magit-insert-task ()
+  "Insert a project task reference in a git commit message.
+Prompts for a Git action verb (e.g. Resolves, Refs) and then
+for a project task, inserting the formatted reference at point.
+Designed to be bound in `git-commit-mode-map'."
+  (interactive)
+  (let* ((verbs '("Resolves" "Fixes" "Closes" "Refs" "Related to"))
+         (verb (completing-read "Action: " verbs nil nil))
+         (candidates (org-snitch--task-candidates))
+         (choice (completing-read "Task: " (mapcar #'car candidates) nil t))
+         (entry (assoc choice candidates))
+         (task-num (nth 2 entry))
+         (heading (nth 3 entry))
+         (clean-heading (string-join (cdr (split-string heading)) " ")))
+    (insert (format "%s #%s: %s" verb task-num clean-heading))))
+
+(defvar git-commit-mode-map)
+(with-eval-after-load 'git-commit
+  (define-key git-commit-mode-map (kbd "C-c C-t") #'org-snitch-magit-insert-task))
+
+;;;###autoload
 (define-minor-mode org-snitch-mode
   "Global minor mode to enable org-snitch project hooks for `org-capture'."
   :global t
