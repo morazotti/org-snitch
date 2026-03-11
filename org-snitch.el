@@ -2,8 +2,8 @@
 
 ;; Copyright (C) 2026  Nícolas Morazotti
 
-;; Author: Nícolas Morazotti
-;; Maintainer: Nícolas Morazotti
+;; Author: Nícolas Morazotti <nicolas.morazotti@gmail.com>
+;; Maintainer: Nícolas Morazotti <nicolas.morazotti@gmail.com>
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: org, project, outlines
@@ -71,7 +71,7 @@ than the parent project.  Internally, this let-binds
 (defun org-snitch--generated-templates ()
   "Generate `org-capture-templates' entries for org-snitch."
   (cons `(,org-snitch-capture-key "Project")
-        (mapcar #'(lambda (tpl)
+        (mapcar (lambdas (tpl)
                   (let ((key (car tpl))
                         (desc (cdr tpl)))
                     `(,(concat org-snitch-capture-key key) ,desc entry
@@ -83,7 +83,7 @@ than the parent project.  Internally, this let-binds
 (defun org-snitch--generated-contexts ()
   "Generate `org-capture-templates-contexts' entries for org-snitch."
   (cons `(,org-snitch-capture-key (org-snitch-context-p))
-        (mapcar #'(lambda (tpl)
+        (mapcar (lambda (tpl)
                   `(,(concat org-snitch-capture-key (car tpl)) (org-snitch-context-p)))
                 org-snitch-capture-templates)))
 
@@ -95,12 +95,12 @@ than the parent project.  Internally, this let-binds
   (unless (boundp 'org-capture-templates-contexts)
     (setq org-capture-templates-contexts nil))
   (let ((keys (cons org-snitch-capture-key
-                    (mapcar #'(lambda (tpl) (concat org-snitch-capture-key (car tpl)))
+                    (mapcar (lambda (tpl) (concat org-snitch-capture-key (car tpl)))
                             org-snitch-capture-templates))))
     (setq org-capture-templates
-          (seq-remove #'(lambda (x) (member (car x) keys)) org-capture-templates))
+          (seq-remove (lambda (x) (member (car x) keys)) org-capture-templates))
     (setq org-capture-templates-contexts
-          (seq-remove #'(lambda (x) (member (car x) keys)) org-capture-templates-contexts)))
+          (seq-remove (lambda (x) (member (car x) keys)) org-capture-templates-contexts)))
   (setq org-capture-templates (append org-capture-templates (org-snitch--generated-templates)))
   (setq org-capture-templates-contexts (append org-capture-templates-contexts (org-snitch--generated-contexts))))
 
@@ -175,14 +175,14 @@ ACTION is `entered`."
         (org-snitch--make-overlays)
         (add-hook 'after-save-hook #'org-snitch--make-overlays nil t)
         (add-hook 'after-change-functions
-                  #'(lambda (&rest _)
+                  (lambda (&rest _)
                     (org-snitch--clear-overlays)
                     (org-snitch--make-overlays)) nil t))
     (cursor-sensor-mode -1)
     (org-snitch--clear-overlays)
     (remove-hook 'after-save-hook #'org-snitch--make-overlays t)
     (remove-hook 'after-change-functions
-                 #'(lambda (&rest _)
+                 (lambda (&rest _)
                    (org-snitch--clear-overlays)
                    (org-snitch--make-overlays)) t)))
 
@@ -211,7 +211,7 @@ deterministc IDs based on heading text, and assigning sequential numbers."
   (with-current-buffer buffer
     (let ((max-num 0))
       (org-map-entries
-       #'(lambda ()
+       (lambda ()
          (when-let ((num (org-entry-get nil "TASK_NUM")))
            (setq max-num (max max-num (string-to-number num)))))
        nil 'file)
@@ -221,10 +221,18 @@ deterministc IDs based on heading text, and assigning sequential numbers."
 (defun org-snitch-store-region-before (&rest _)
   "Store the active region boundaries before capturing.
 This runs as `advice-add' :before on `org-capture'."
-  (when (and (use-region-p) (null org-snitch--source-buffer))
-    (setq org-snitch--source-buffer (current-buffer)
-          org-snitch--region-beg-marker (copy-marker (region-beginning))
-          org-snitch--region-end-marker (copy-marker (region-end) t))))
+  (unless org-snitch--source-buffer
+    (cond
+     ((use-region-p)
+      (setq org-snitch--source-buffer (current-buffer)
+            org-snitch--region-beg-marker (copy-marker (region-beginning))
+            org-snitch--region-end-marker (copy-marker (region-end) t)))
+     ((save-excursion
+        (beginning-of-line)
+        (re-search-forward (rx word-start (or "TODO" "FIXME" "XXX") word-end) (line-end-position) t))
+      (setq org-snitch--source-buffer (current-buffer)
+            org-snitch--region-beg-marker (copy-marker (match-beginning 0))
+            org-snitch--region-end-marker (copy-marker (line-end-position) t))))))
 
 ;;;###autoload
 (defun org-snitch-store-key ()
