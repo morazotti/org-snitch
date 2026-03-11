@@ -4,7 +4,7 @@
 
 ;; Author: Nícolas Morazotti <nicolas.morazotti@gmail.com>
 ;; Maintainer: Nícolas Morazotti <nicolas.morazotti@gmail.com>
-;; Version: 0.1.0
+;; Version: 0.2.1
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: org, project, outlines
 ;; URL: https://github.com/morazotti/org-snitch
@@ -252,7 +252,9 @@ This runs as `advice-add' :before on `org-capture'."
         (re-search-forward (rx word-start (or "TODO" "FIXME" "XXX") word-end) (line-end-position) t))
       (setq org-snitch--source-buffer (current-buffer)
             org-snitch--region-beg-marker (copy-marker (match-beginning 0))
-            org-snitch--region-end-marker (copy-marker (line-end-position) t))))))
+            org-snitch--region-end-marker (copy-marker (line-end-position) t)))
+     (t
+      (setq org-snitch--source-buffer (current-buffer))))))
 
 ;;;###autoload
 (defun org-snitch-store-key ()
@@ -364,7 +366,10 @@ hook with an active region, replaces the region with the link."
                              (when (org-up-heading-safe)
                                (upcase (org-get-heading t t t t)))))))
           (with-current-buffer org-snitch--source-buffer
-            (insert (org-snitch--format-link id task-num heading parent))))))
+            (insert (org-snitch--format-link id task-num heading parent)))
+          ;; Nullify source buffer immediately to prevent duplicate runs
+          ;; if the :after-finalize hook executes more than once.
+          (setq org-snitch--source-buffer nil))))
 
      ;; 3. Interactive/fallback: use completing-read only if NOT in capture hook
      ((not in-capture-hook)
