@@ -75,6 +75,8 @@ To have your `id:` links rendered cleanly as `[Ticket Name]` overlays when navig
 
 **Capturing from Code:**
 If you select a region of code before invoking the capture, `org-snitch` will replace that region in the source buffer with a link back to the generated org heading upon finalizing the capture.
+Additionally, the newly generated task in your `project.org` file will automatically receive a `:SOURCE:` property containing an `org-mode` link to the exact line in the code file that triggered the capture. This allows for rich bidirectional tracking.
+
 ### Inserting Existing Task Links
 
 You can insert a link to an existing task anywhere in your code interactively by calling:

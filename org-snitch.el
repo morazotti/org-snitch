@@ -219,8 +219,21 @@ deterministic IDs based on heading text, and assigning sequential numbers."
         (org-back-to-heading t)
         (let* ((title (org-get-heading t t t t))
                (hash (md5 title))
+               (source-props
+                (when (and org-snitch--source-buffer (buffer-live-p org-snitch--source-buffer))
+                  (with-current-buffer org-snitch--source-buffer
+                    (let* ((file (buffer-file-name))
+                           (line (if org-snitch--region-beg-marker
+                                     (line-number-at-pos org-snitch--region-beg-marker)
+                                   (line-number-at-pos))))
+                      (when file
+                        (format "[[file:%s::%d]]"
+                                (file-relative-name file (org-snitch--get-project-root))
+                                line))))))
                task-num)
           (org-set-property "ID" hash)
+          (when source-props
+            (org-set-property "SOURCE" source-props))
           (unless (org-entry-get nil "TASK_NUM")
             (setq task-num (org-snitch--next-task-num (current-buffer)))
             (org-set-property "TASK_NUM" (number-to-string task-num)))
