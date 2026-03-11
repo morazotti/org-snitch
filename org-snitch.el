@@ -479,5 +479,47 @@ Designed to be bound in `git-commit-mode-map'."
     (remove-hook 'org-capture-mode-hook #'org-snitch-store-key)
     (remove-hook 'org-capture-after-finalize-hook #'org-snitch-cleanup t)))
 
+(require 'transient)
+
+(defun org-snitch--project-name ()
+  "Return the formatted project name or \"No project\"."
+  (if-let ((root (org-snitch-context-p)))
+      (file-name-nondirectory (directory-file-name root))
+    "No project"))
+
+(defun org-snitch--task-counts ()
+  "Return a summary of tasks in the current project."
+  (if-let ((project-file (ignore-errors (org-snitch-find-project-file))))
+      (if (file-exists-p project-file)
+          (let ((total 0) (done 0) (todo 0))
+            (with-current-buffer (find-file-noselect project-file)
+              (org-map-entries
+               (lambda ()
+                 (when (org-entry-get nil "ID")
+                   (setq total (1+ total))
+                   (let ((state (org-get-todo-state)))
+                     (cond ((equal state "DONE") (setq done (1+ done)))
+                           ((equal state "TODO") (setq todo (1+ todo)))))))
+               nil 'file))
+            (format "%d Tasks (%d TODO, %d DONE)" total todo done))
+        "Project file not found")
+    "N/A"))
+
+;;;###autoload (autoload 'org-snitch-dispatch "org-snitch" nil t)
+(transient-define-prefix org-snitch-dispatch ()
+  "Interactive dashboard and unified dispatch menu for `org-snitch'."
+  [:description
+   (lambda ()
+     (format "Snitching on: %s\n   %s"
+             (propertize (org-snitch--project-name) 'face 'font-lock-keyword-face)
+             (propertize (org-snitch--task-counts) 'face 'font-lock-comment-face)))
+   ["Project"
+    ("o" "Open project.org" (lambda () (interactive) (find-file (org-snitch-find-project-file))))
+    ("c" "Capture task" org-capture)]
+   ["Code Actions"
+    ("i" "Insert link at point" org-snitch-insert-link)
+    ("r" "Find project references" org-snitch-find-references)
+    ("d" "Mark task DONE at point" org-snitch-mark-done)]])
+
 (provide 'org-snitch)
 ;;; org-snitch.el ends here

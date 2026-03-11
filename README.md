@@ -51,6 +51,9 @@ You can customize `org-snitch` behavior by setting the following variables **bef
      ("b" . "Bugs")
      ("f" . "Features")))
 
+  :bind
+  ("C-c s" . org-snitch-dispatch)
+
   :config
   (org-snitch-setup)
   (org-snitch-mode 1))
@@ -65,6 +68,21 @@ To have your `id:` links rendered cleanly as `[Ticket Name]` overlays when navig
 ```
 
 ## Usage
+
+### Interactive Dashboard (Transient)
+
+`org-snitch` includes a built-in Transient menu that acts as a unified dashboard for all your project tasks. Inside any project file, you can call:
+
+```elisp
+M-x org-snitch-dispatch
+```
+
+This will open an interactive menu displaying:
+- The name of your current project
+- The total count of open (`TODO`) and finished (`DONE`) tasks
+- Quick bindings to Capture a new task, Insert a link, Find references, Mark a task as Done, or Open the project tracking file.
+
+### Basic Workflow
 
 1. Open any file in a project recognized by `project.el`.
 2. Invoke `org-capture` (usually `C-c c`).
