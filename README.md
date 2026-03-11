@@ -75,6 +75,25 @@ To have your `id:` links rendered cleanly as `[Ticket Name]` overlays when navig
 
 **Capturing from Code:**
 If you select a region of code before invoking the capture, `org-snitch` will replace that region in the source buffer with a link back to the generated org heading upon finalizing the capture.
+### Inserting Existing Task Links
+
+You can insert a link to an existing task anywhere in your code interactively by calling:
+
+```elisp
+M-x org-snitch-insert-link
+```
+
+This presents a `completing-read` interface with all tasks in your `project.org` file. Selecting a task inserts a formatted link (e.g., `// TASKS: (#123) [[id:hash][Refactor loop]]`) at point, automatically wrapped in the current mode's comment syntax.
+
+### Tracking Task References
+
+To find all locations in your project where a specific task is referenced, use:
+
+```elisp
+M-x org-snitch-find-references
+```
+
+This command lets you select a task via `completing-read`, then leverages `project.el` and `xref` to search your entire codebase for the task's ID. Wait a moment, and an `xref` buffer will pop up displaying the results with file previews across your project.
 
 ## License
 
