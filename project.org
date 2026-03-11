@@ -25,7 +25,7 @@ Ambas fazem, efetivamente, a mesma coisa.
 :TASK_NUM: 4
 :END:
 Deve haver uma maneira de rastrear os links utilizados nos arquivos do projeto. O objetivo é fazê-lo agora.
-** TODO 20260311170708 Integrating with Magit
+** DONE 20260311170708 Integrating with Magit
 :PROPERTIES:
 :ID:       098ea33bb34f0ca3f4c2016f556bd609
 :TASK_NUM: 5
@@ -56,3 +56,9 @@ We could also implement a fixer for *every* reference in the codebase, but it co
 :TASK_NUM: 7
 :END:
 From the code buffer, we could add a way to change the ticket status (like ~C-c t d~, for example).
+** TODO 20260311175139 Add source of original capture
+:PROPERTIES:
+:ID:       7187d6314eae6e6b25bd3d9af2254a60
+:TASK_NUM: 8
+:END:
+Indexes in which file the original capture command was invoked and inserted, enhancing experience.
