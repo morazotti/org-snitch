@@ -284,7 +284,7 @@ Each element is (DISPLAY-STRING ID TASK-NUM HEADING PARENT)."
     (delq nil
           (with-current-buffer (find-file-noselect project-file)
             (org-map-entries
-             #'(lambda ()
+             (lambda ()
                  (let ((id (org-entry-get nil "ID"))
                        (todo (org-get-todo-state))
                        (task-num (org-entry-get nil "TASK_NUM"))
@@ -365,7 +365,7 @@ for occurrences of the selected task's ID using `xref'."
                        (not org-snitch-independent-submodules)))
                   (project-files (project-current t)))))
     (xref-show-xrefs
-     #'(lambda () (xref-matches-in-files
+     (lambda () (xref-matches-in-files
                    (regexp-quote (format "id:%s" id)) files))
      nil)))
 
