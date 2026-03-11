@@ -85,7 +85,7 @@ than the parent project.  Internally, this let-binds
 (defun org-snitch--generated-templates ()
   "Generate `org-capture-templates' entries for org-snitch."
   (cons `(,org-snitch-capture-key "Project")
-        (mapcar (lambdas (tpl)
+        (mapcar (lambda (tpl)
                   (let ((key (car tpl))
                         (desc (cdr tpl)))
                     `(,(concat org-snitch-capture-key key) ,desc entry
@@ -206,7 +206,9 @@ ACTION is `entered`."
 This triggers after a project capture finalize, generating
 deterministc IDs based on heading text, and assigning sequential numbers."
   (interactive)
-  (when (and (markerp org-capture-last-stored-marker)
+  (when (and org-snitch--key
+             (string-prefix-p org-snitch-capture-key org-snitch--key)
+             (markerp org-capture-last-stored-marker)
              (marker-buffer org-capture-last-stored-marker))
     (with-current-buffer (marker-buffer org-capture-last-stored-marker)
       (save-excursion
@@ -218,7 +220,8 @@ deterministc IDs based on heading text, and assigning sequential numbers."
           (org-set-property "ID" hash)
           (unless (org-entry-get nil "TASK_NUM")
             (setq task-num (org-snitch--next-task-num (current-buffer)))
-            (org-set-property "TASK_NUM" (number-to-string task-num))))))))
+            (org-set-property "TASK_NUM" (number-to-string task-num)))
+          (save-buffer))))))
 
 (defun org-snitch--next-task-num (buffer)
   "Return the next TASK_NUM for the project in BUFFER."
@@ -313,11 +316,13 @@ originates from a valid region and template key."
       (progn
         (advice-add 'org-capture :before #'org-snitch-store-region-before)
         (add-hook 'org-capture-mode-hook  #'org-snitch-store-key)
+        (add-hook 'org-capture-after-finalize-hook #'org-snitch-set-id-from-heading)
         (add-hook 'org-capture-after-finalize-hook #'org-snitch-insert-link t)
         (add-hook 'org-capture-after-finalize-hook #'org-snitch-update-id-locations t)
         (add-hook 'org-capture-after-finalize-hook #'org-snitch-cleanup t))
     (advice-remove 'org-capture #'org-snitch-store-region-before)
     (remove-hook 'org-capture-mode-hook #'org-snitch-store-key)
+    (remove-hook 'org-capture-after-finalize-hook #'org-snitch-set-id-from-heading)
     (remove-hook 'org-capture-after-finalize-hook #'org-snitch-insert-link t)
     (remove-hook 'org-capture-after-finalize-hook #'org-snitch-update-id-locations t)
     (remove-hook 'org-capture-after-finalize-hook #'org-snitch-cleanup t)))
