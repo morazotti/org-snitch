@@ -87,6 +87,10 @@ M-x org-snitch-insert-link
 
 This presents a `completing-read` interface with all tasks in your `project.org` file. Selecting a task inserts a formatted link (e.g., `// TASKS: (#123) [[id:hash][Refactor loop]]`) at point, automatically wrapped in the current mode's comment syntax.
 
+When `org-snitch-link-mode` is enabled, an overlay will make these links look clean in your source code. You can interact with these links directly:
+- **`C-c C-o`**: Open the task in `project.org`.
+- **`C-c C-d`**: Instantly mark the task as `DONE` in the background without leaving your source file.
+
 ### Tracking Task References
 
 To find all locations in your project where a specific task is referenced, use:

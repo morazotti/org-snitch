@@ -176,9 +176,41 @@ ACTION is `entered`."
                          (propertize (format "[%s]" (match-string 1))
                                      'face 'org-snitch-link-face))))))))
 
+(defun org-snitch--id-at-point ()
+  "Return the project task ID if point is on an `org-snitch' link, nil otherwise."
+  (let ((orig-point (point))
+        (id nil))
+    (save-excursion
+      (beginning-of-line)
+      (while (and (not id)
+                  (re-search-forward "\\[\\[id:\\([^]]+\\)\\]\\[.*?\\]\\]" (line-end-position) t))
+        (when (and (<= (match-beginning 0) orig-point)
+                   (>= (match-end 0) orig-point))
+          (setq id (match-string-no-properties 1)))))
+    id))
+
+;;;###autoload
+(defun org-snitch-mark-done ()
+  "Mark the `org-snitch' project task under point as DONE.
+Finds the task using its ID, changes the TODO state to DONE,
+and saves the project file without switching windows."
+  (interactive)
+  (let ((id (org-snitch--id-at-point)))
+    (unless id
+      (user-error "No project task link found at point"))
+    (save-window-excursion
+      (require 'org-id)
+      (condition-case nil
+          (org-id-goto id)
+        (error (user-error "Task ID %s not found" id)))
+      (org-todo "DONE")
+      (save-buffer)
+      (message "Task %s marked as DONE." id))))
+
 (defvar org-snitch-link-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-o") #'org-open-at-point-global)
+    (define-key map (kbd "C-c C-d") #'org-snitch-mark-done)
     map)
   "Keymap for `org-snitch-link-mode'.")
 

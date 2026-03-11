@@ -50,13 +50,13 @@ By combining `org-snitch` and `magit`, you create a seamless bridge between your
 If two users create a ticket on ~project.org~, they may have the same ~task_num~, thus conflicting which one is correct. We could create a function (~org-snitch-fix-collision~) that uses the date on the heading to choose which one may come before, and fix every other collision.
 
 We could also implement a fixer for *every* reference in the codebase, but it could go highly wrong.
-** TODO 20260311171223 Add remote mark-as-done
+** DONE 20260311171223 Add remote mark-as-done
 :PROPERTIES:
 :ID:       809204efdab8a8fabfc3aa5e29ba1de7
 :TASK_NUM: 7
 :END:
 From the code buffer, we could add a way to change the ticket status (like ~C-c t d~, for example).
-** TODO 20260311175139 Add source of original capture
+** DONE 20260311175139 Add source of original capture
 :PROPERTIES:
 :ID:       7187d6314eae6e6b25bd3d9af2254a60
 :TASK_NUM: 8
