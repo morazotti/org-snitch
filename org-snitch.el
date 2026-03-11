@@ -351,6 +351,25 @@ hook with an active region, replaces the region with the link."
                (nth 3 entry) (nth 4 entry))))))
 
 ;;;###autoload
+(defun org-snitch-find-references ()
+  "Find all references to a project task across the codebase.
+Presents tasks via `completing-read', then searches the project
+for occurrences of the selected task's ID using `xref'."
+  (interactive)
+  (let* ((candidates (org-snitch--task-candidates))
+         (choice (completing-read "Find references for: "
+                                  (mapcar #'car candidates) nil t))
+         (entry (assoc choice candidates))
+         (id (nth 1 entry))
+         (files (let ((project-vc-merge-submodules
+                       (not org-snitch-independent-submodules)))
+                  (project-files (project-current t)))))
+    (xref-show-xrefs
+     #'(lambda () (xref-matches-in-files
+                   (regexp-quote (format "id:%s" id)) files))
+     nil)))
+
+;;;###autoload
 (define-minor-mode org-snitch-mode
   "Global minor mode to enable org-snitch project hooks for `org-capture'."
   :global t
