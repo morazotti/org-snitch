@@ -6,9 +6,22 @@
 :END:
 Whenever I capture without a region, it does not generate ids and task nums
 * Tasks
-** TODO 20260311102020 Add a way to insert project links
+** DONE 20260311102020 Add a way to insert project links
 :PROPERTIES:
 :ID:       c5c9a53654591b78f8bab78082a3dfab
 :TASK_NUM: 2
 :END:
 We should be able to append a ticket link in an easy way, like using ~org-insert-link~, for example. It would add ~<comment-syntax> <HEADING-TYPE> (#<TASK-NUM>) [[id:<id>][<heading-name>]]~ to the point.
+** TODO 20260311105735 Mesclar as funções org-snitch-insert(-task)-link
+:PROPERTIES:
+:ID:       4d2f4fb3f30318f9fc19ce0cddab7271
+:TASK_NUM: 3
+:END:
+Ambas fazem, efetivamente, a mesma coisa.
+** TODO 20260311105946 Rastrear links
+:PROPERTIES:
+:ID:       e142f5cae764660f1ed0eac3a0366a60
+:TASK_NUM: 4
+:END:
+Deve haver uma maneira de rastrear os links utilizados nos arquivos do projeto. O objetivo é fazê-lo agora.
+* Notes
