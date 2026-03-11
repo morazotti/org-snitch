@@ -5,6 +5,7 @@
 :TASK_NUM: 1
 :END:
 Whenever I capture without a region, it does not generate ids and task nums
+* Notes
 * Tasks
 ** DONE 20260311102020 Add a way to insert project links
 :PROPERTIES:
@@ -24,4 +25,34 @@ Ambas fazem, efetivamente, a mesma coisa.
 :TASK_NUM: 4
 :END:
 Deve haver uma maneira de rastrear os links utilizados nos arquivos do projeto. O objetivo é fazê-lo agora.
-* Notes
+** TODO 20260311170708 Integrating with Magit
+:PROPERTIES:
+:ID:       098ea33bb34f0ca3f4c2016f556bd609
+:TASK_NUM: 5
+:END:
+
+To enhance your workflow with `org-snitch`, you can integrate it with `magit` to streamline project notes and task management directly from your version control interface.
+
+1. **Linking Commits to Tasks:** Automatically generate links to relevant project tasks when making commits. This can improve traceability and context for future code reviews.
+
+2. **Inserting Task References in Commit Messages:**
+   You can insert links to specific tasks directly into your commit messages using `org-snitch-insert-link` before you finish writing your commit.
+
+3. **Tracking Task Progress Through Commits:**
+   Flesh out your work by referencing tasks in your commits. Use `org-snitch-find-references` to search for these task references across your commits, providing an audit trail of task progression within your project’s version history.
+
+By combining `org-snitch` and `magit`, you create a seamless bridge between your project's version control and task documentation, making it easier to maintain clear communication and organization within your development workflow.
+** TODO 20260311170921 Add collision correction
+:PROPERTIES:
+:ID:       22f35d164da99778c79d40d8852c3d58
+:TASK_NUM: 6
+:END:
+If two users create a ticket on ~project.org~, they may have the same ~task_num~, thus conflicting which one is correct. We could create a function (~org-snitch-fix-collision~) that uses the date on the heading to choose which one may come before, and fix every other collision.
+
+We could also implement a fixer for *every* reference in the codebase, but it could go highly wrong.
+** TODO 20260311171223 Add remote mark-as-done
+:PROPERTIES:
+:ID:       809204efdab8a8fabfc3aa5e29ba1de7
+:TASK_NUM: 7
+:END:
+From the code buffer, we could add a way to change the ticket status (like ~C-c t d~, for example).

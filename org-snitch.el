@@ -4,7 +4,7 @@
 
 ;; Author: Nícolas Morazotti <nicolas.morazotti@gmail.com>
 ;; Maintainer: Nícolas Morazotti <nicolas.morazotti@gmail.com>
-;; Version: 0.1.0
+;; Version: 0.2.1
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: org, project, outlines
 ;; URL: https://github.com/morazotti/org-snitch
@@ -91,7 +91,10 @@ than the parent project.  Internally, this let-binds
                     `(,(concat org-snitch-capture-key key) ,desc entry
                       (file+headline org-snitch-find-project-file ,desc)
                       "* TODO %<%Y%m%d%H%M%S> %?%i \n"
-                      :after-finalize org-snitch-set-id-from-heading)))
+                      :after-finalize (lambda ()
+                                        (org-snitch-set-id-from-heading)
+                                        (org-snitch-insert-link)
+                                        (org-snitch-update-id-locations)))))
                 org-snitch-capture-templates)))
 
 (defun org-snitch--generated-contexts ()
@@ -249,7 +252,9 @@ This runs as `advice-add' :before on `org-capture'."
         (re-search-forward (rx word-start (or "TODO" "FIXME" "XXX") word-end) (line-end-position) t))
       (setq org-snitch--source-buffer (current-buffer)
             org-snitch--region-beg-marker (copy-marker (match-beginning 0))
-            org-snitch--region-end-marker (copy-marker (line-end-position) t))))))
+            org-snitch--region-end-marker (copy-marker (line-end-position) t)))
+     (t
+      (setq org-snitch--source-buffer (current-buffer))))))
 
 ;;;###autoload
 (defun org-snitch-store-key ()
@@ -317,14 +322,17 @@ When called interactively, presents project tasks via `completing-read'
 and inserts the formatted link at point.  When called as a capture
 hook with an active region, replaces the region with the link."
   (interactive)
-  (if (and (not (called-interactively-p 'any))
+  (let ((in-capture-hook (and org-snitch--key
+                              (string-prefix-p org-snitch-capture-key org-snitch--key)
+                              (not (called-interactively-p 'any)))))
+    (cond
+     ;; 1. Called as a hook AND we have an active region stored
+     ((and in-capture-hook
            org-snitch--source-buffer
            org-snitch--region-beg-marker
            org-snitch--region-end-marker
            (markerp org-capture-last-stored-marker)
-           (marker-buffer org-capture-last-stored-marker)
-           (string-prefix-p org-snitch-capture-key (or org-snitch--key "")))
-      ;; Called as capture hook — replace region with link.
+           (marker-buffer org-capture-last-stored-marker))
       (let (id task-num heading parent)
         (with-current-buffer (marker-buffer org-capture-last-stored-marker)
           (save-excursion
@@ -341,14 +349,36 @@ hook with an active region, replaces the region with the link."
             (goto-char org-snitch--region-beg-marker)
             (delete-region org-snitch--region-beg-marker
                            org-snitch--region-end-marker)
-            (insert (org-snitch--format-link id task-num heading parent)))))
-    ;; Called interactively — pick task via completing-read.
-    (let* ((candidates (org-snitch--task-candidates))
-           (choice (completing-read "Task: " (mapcar #'car candidates) nil t))
-           (entry (assoc choice candidates)))
-      (insert (org-snitch--format-link
-               (nth 1 entry) (nth 2 entry)
-               (nth 3 entry) (nth 4 entry))))))
+            (insert (org-snitch--format-link id task-num heading parent))))))
+
+     ;; 2. Called as a hook but NO region was stored AND we have a valid source buffer
+     ((and in-capture-hook org-snitch--source-buffer)
+      (when (y-or-n-p "Insert task link at point? ")
+        (let (id task-num heading parent)
+          (with-current-buffer (marker-buffer org-capture-last-stored-marker)
+            (save-excursion
+              (goto-char org-capture-last-stored-marker)
+              (org-back-to-heading t)
+              (setq id (org-entry-get nil "ID"))
+              (setq task-num (org-entry-get nil "TASK_NUM"))
+              (setq heading (org-get-heading t t t t))
+              (setq parent (save-excursion
+                             (when (org-up-heading-safe)
+                               (upcase (org-get-heading t t t t)))))))
+          (with-current-buffer org-snitch--source-buffer
+            (insert (org-snitch--format-link id task-num heading parent)))
+          ;; Nullify source buffer immediately to prevent duplicate runs
+          ;; if the :after-finalize hook executes more than once.
+          (setq org-snitch--source-buffer nil))))
+
+     ;; 3. Interactive/fallback: use completing-read only if NOT in capture hook
+     ((not in-capture-hook)
+      (let* ((candidates (org-snitch--task-candidates))
+             (choice (completing-read "Task: " (mapcar #'car candidates) nil t))
+             (entry (assoc choice candidates)))
+        (insert (org-snitch--format-link
+                 (nth 1 entry) (nth 2 entry)
+                 (nth 3 entry) (nth 4 entry))))))))
 
 ;;;###autoload
 (defun org-snitch-find-references ()
@@ -370,6 +400,27 @@ for occurrences of the selected task's ID using `xref'."
      nil)))
 
 ;;;###autoload
+(defun org-snitch-magit-insert-task ()
+  "Insert a project task reference in a git commit message.
+Prompts for a Git action verb (e.g. Resolves, Refs) and then
+for a project task, inserting the formatted reference at point.
+Designed to be bound in `git-commit-mode-map'."
+  (interactive)
+  (let* ((verbs '("Resolves" "Fixes" "Closes" "Refs" "Related to"))
+         (verb (completing-read "Action: " verbs nil nil))
+         (candidates (org-snitch--task-candidates))
+         (choice (completing-read "Task: " (mapcar #'car candidates) nil t))
+         (entry (assoc choice candidates))
+         (task-num (nth 2 entry))
+         (heading (nth 3 entry))
+         (clean-heading (string-join (cdr (split-string heading)) " ")))
+    (insert (format "%s #%s: %s" verb task-num clean-heading))))
+
+(defvar git-commit-mode-map)
+(with-eval-after-load 'git-commit
+  (define-key git-commit-mode-map (kbd "C-c C-t") #'org-snitch-magit-insert-task))
+
+;;;###autoload
 (define-minor-mode org-snitch-mode
   "Global minor mode to enable org-snitch project hooks for `org-capture'."
   :global t
@@ -378,15 +429,9 @@ for occurrences of the selected task's ID using `xref'."
       (progn
         (advice-add 'org-capture :before #'org-snitch-store-region-before)
         (add-hook 'org-capture-mode-hook  #'org-snitch-store-key)
-        (add-hook 'org-capture-after-finalize-hook #'org-snitch-set-id-from-heading)
-        (add-hook 'org-capture-after-finalize-hook #'org-snitch-insert-link t)
-        (add-hook 'org-capture-after-finalize-hook #'org-snitch-update-id-locations t)
         (add-hook 'org-capture-after-finalize-hook #'org-snitch-cleanup t))
     (advice-remove 'org-capture #'org-snitch-store-region-before)
     (remove-hook 'org-capture-mode-hook #'org-snitch-store-key)
-    (remove-hook 'org-capture-after-finalize-hook #'org-snitch-set-id-from-heading)
-    (remove-hook 'org-capture-after-finalize-hook #'org-snitch-insert-link t)
-    (remove-hook 'org-capture-after-finalize-hook #'org-snitch-update-id-locations t)
     (remove-hook 'org-capture-after-finalize-hook #'org-snitch-cleanup t)))
 
 (provide 'org-snitch)
