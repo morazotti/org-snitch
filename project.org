@@ -42,7 +42,7 @@ To enhance your workflow with `org-snitch`, you can integrate it with `magit` to
    Flesh out your work by referencing tasks in your commits. Use `org-snitch-find-references` to search for these task references across your commits, providing an audit trail of task progression within your project’s version history.
 
 By combining `org-snitch` and `magit`, you create a seamless bridge between your project's version control and task documentation, making it easier to maintain clear communication and organization within your development workflow.
-** TODO 20260311170921 Add collision correction
+** DONE 20260311170921 Add collision correction
 :PROPERTIES:
 :ID:       22f35d164da99778c79d40d8852c3d58
 :TASK_NUM: 6

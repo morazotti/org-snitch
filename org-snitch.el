@@ -68,6 +68,14 @@ than the parent project.  Internally, this let-binds
   :type 'boolean
   :group 'org-snitch)
 
+(defcustom org-snitch-user-prefix (upcase (user-login-name))
+  "User-specific prefix appended to automatically generated TASK_NUM.
+Defaults to the uppercase login name of the current user. E.g., if set
+to \"NICO\", tasks will be numbered as NICO-1, NICO-2 to avoid
+ticket collisions in multi-user setups without the need of a central server."
+  :type 'string
+  :group 'org-snitch)
+
 (defun org-snitch--get-project-root ()
   "Find the project root, respecting `org-snitch-independent-submodules'."
   (require 'project)
@@ -267,17 +275,19 @@ deterministic IDs based on heading text, and assigning sequential numbers."
             (org-set-property "SOURCE" source-props))
           (unless (org-entry-get nil "TASK_NUM")
             (setq task-num (org-snitch--next-task-num (current-buffer)))
-            (org-set-property "TASK_NUM" (number-to-string task-num)))
+            (org-set-property "TASK_NUM" (format "%s-%d" org-snitch-user-prefix task-num)))
           (save-buffer))))))
 
 (defun org-snitch--next-task-num (buffer)
-  "Return the next TASK_NUM for the project in BUFFER."
+  "Return the next TASK_NUM integer for the current user prefix."
   (with-current-buffer buffer
-    (let ((max-num 0))
+    (let ((max-num 0)
+          (prefix-pattern (format "^%s-\\([0-9]+\\)$" (regexp-quote org-snitch-user-prefix))))
       (org-map-entries
        (lambda ()
-         (when-let ((num (org-entry-get nil "TASK_NUM")))
-           (setq max-num (max max-num (string-to-number num)))))
+         (when-let ((num-str (org-entry-get nil "TASK_NUM")))
+           (when (string-match prefix-pattern num-str)
+             (setq max-num (max max-num (string-to-number (match-string 1 num-str)))))))
        nil 'file)
       (1+ max-num))))
 
