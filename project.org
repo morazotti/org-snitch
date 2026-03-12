@@ -31,17 +31,17 @@ Deve haver uma maneira de rastrear os links utilizados nos arquivos do projeto. 
 :TASK_NUM: 5
 :END:
 
-To enhance your workflow with `org-snitch`, you can integrate it with `magit` to streamline project notes and task management directly from your version control interface.
+To enhance your workflow with ~org-snitch~, you can integrate it with ~magit~ to streamline project notes and task management directly from your version control interface.
 
-1. **Linking Commits to Tasks:** Automatically generate links to relevant project tasks when making commits. This can improve traceability and context for future code reviews.
+1. *Linking Commits to Tasks:* Automatically generate links to relevant project tasks when making commits. This can improve traceability and context for future code reviews.
 
-2. **Inserting Task References in Commit Messages:**
-   You can insert links to specific tasks directly into your commit messages using `org-snitch-insert-link` before you finish writing your commit.
+2. *Inserting Task References in Commit Messages:*
+   You can insert links to specific tasks directly into your commit messages using ~org-snitch-insert-link~ before you finish writing your commit.
 
-3. **Tracking Task Progress Through Commits:**
-   Flesh out your work by referencing tasks in your commits. Use `org-snitch-find-references` to search for these task references across your commits, providing an audit trail of task progression within your project’s version history.
+3. *Tracking Task Progress Through Commits:*
+   Flesh out your work by referencing tasks in your commits. Use ~org-snitch-find-references~ to search for these task references across your commits, providing an audit trail of task progression within your project’s version history.
 
-By combining `org-snitch` and `magit`, you create a seamless bridge between your project's version control and task documentation, making it easier to maintain clear communication and organization within your development workflow.
+By combining ~org-snitch~ and ~magit~, you create a seamless bridge between your project's version control and task documentation, making it easier to maintain clear communication and organization within your development workflow.
 ** DONE 20260311170921 Add collision correction
 :PROPERTIES:
 :ID:       22f35d164da99778c79d40d8852c3d58
