@@ -526,7 +526,9 @@ Designed to be bound in `git-commit-mode-map'."
              (propertize (org-snitch--task-counts) 'face 'font-lock-comment-face)))
    ["Project"
     ("o" "Open project.org" (lambda () (interactive) (find-file (org-snitch-find-project-file))))
-    ("c" "Capture task" org-capture)]
+    ("c" "Capture task" (lambda () (interactive)
+                                   (let ((unread-command-events (listify-key-sequence org-snitch-capture-key)))
+                                     (org-capture))))]
    ["Code Actions"
     ("i" "Insert link at point" org-snitch-insert-link)
     ("r" "Find project references" org-snitch-find-references)
