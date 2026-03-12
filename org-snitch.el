@@ -208,11 +208,10 @@ and saves the project file without switching windows."
       (message "Task %s marked as DONE." id))))
 
 (defvar org-snitch-link-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c C-o") #'org-open-at-point-global)
-    (define-key map (kbd "C-c C-d") #'org-snitch-mark-done)
-    map)
-  "Keymap for `org-snitch-link-mode'.")
+  (make-sparse-keymap)
+  "Keymap for `org-snitch-link-mode'.
+Users should bind keys like `org-open-at-point-global' and
+`org-snitch-mark-done' here.")
 
 ;;;###autoload
 (define-minor-mode org-snitch-link-mode
@@ -474,10 +473,12 @@ Designed to be bound in `git-commit-mode-map'."
       (progn
         (advice-add 'org-capture :before #'org-snitch-store-region-before)
         (add-hook 'org-capture-mode-hook  #'org-snitch-store-key)
-        (add-hook 'org-capture-after-finalize-hook #'org-snitch-cleanup t))
+        (add-hook 'org-capture-after-finalize-hook #'org-snitch-cleanup t)
+        (add-hook 'prog-mode-hook #'org-snitch-link-mode))
     (advice-remove 'org-capture #'org-snitch-store-region-before)
     (remove-hook 'org-capture-mode-hook #'org-snitch-store-key)
-    (remove-hook 'org-capture-after-finalize-hook #'org-snitch-cleanup t)))
+    (remove-hook 'org-capture-after-finalize-hook #'org-snitch-cleanup t)
+    (remove-hook 'prog-mode-hook #'org-snitch-link-mode)))
 
 (require 'transient)
 
