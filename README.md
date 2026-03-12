@@ -52,20 +52,17 @@ You can customize `org-snitch` behavior by setting the following variables **bef
      ("f" . "Features")))
 
   :bind
-  ("C-c s" . org-snitch-dispatch)
+  (("C-c s" . org-snitch-dispatch)
+   :map org-snitch-link-mode-map
+   ("C-c C-o" . org-open-at-point-global)
+   ("C-c C-d" . org-snitch-mark-done))
 
   :config
   (org-snitch-setup)
   (org-snitch-mode 1))
 ```
 
-### Enabling Link Rendering in Code
-
-To have your `id:` links rendered cleanly as `[Ticket Name]` overlays when navigating your source code files, enable `org-snitch-link-mode` in your preferred programming modes:
-
-```elisp
-(add-hook 'prog-mode-hook #'org-snitch-link-mode)
-```
+> **Note:** Enabling `org-snitch-mode` automatically turns on `org-snitch-link-mode` for all your programming modes (`prog-mode`), ensuring that task IDs found in your source code comments are seamlessly rendered as clean `[Task Title]` overlays.
 
 ## Usage
 
