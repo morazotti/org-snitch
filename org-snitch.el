@@ -139,8 +139,29 @@ ticket collisions in multi-user setups without the need of a central server."
   "The template key used for the current capture.")
 
 (defvar org-snitch-link-overlay-regexp
-  (rx "[[" (one-or-more (not "]")) "][" (group (one-or-more (not "]"))) "]]")
+  (rx "[[" "id:" (one-or-more (not "]")) "][" (group (one-or-more (not "]"))) "]]")
   "Regular expression for matching simple bracket links `[[id:hash][desc]]'.")
+
+(defmacro org-snitch--with-capture-marker (&rest body)
+  "Evaluate BODY with point at the start of the `org-capture` task heading.
+Binds variables `id', `task-num', `heading', and `parent' based
+on the newly created capture entry before evaluating BODY."
+  `(when (and org-snitch--key
+              (string-prefix-p org-snitch-capture-key org-snitch--key)
+              (markerp org-capture-last-stored-marker)
+              (marker-buffer org-capture-last-stored-marker))
+     (with-current-buffer (marker-buffer org-capture-last-stored-marker)
+       (save-excursion
+         (goto-char org-capture-last-stored-marker)
+         (org-back-to-heading t)
+         (let* ((heading (org-get-heading t t t t))
+                (id (org-entry-get nil "ID"))
+                (task-num (org-entry-get nil "TASK_NUM"))
+                (parent (save-excursion
+                          (when (org-up-heading-safe)
+                            (upcase (org-get-heading t t t t))))))
+           (ignore id task-num heading parent)
+           ,@body)))))
 
 (defface org-snitch-link-face
   '((t :foreground "orange"
@@ -248,35 +269,28 @@ Users should bind keys like `org-open-at-point-global' and
 This triggers after a project capture finalize, generating
 deterministic IDs based on heading text, and assigning sequential numbers."
   (interactive)
-  (when (and org-snitch--key
-             (string-prefix-p org-snitch-capture-key org-snitch--key)
-             (markerp org-capture-last-stored-marker)
-             (marker-buffer org-capture-last-stored-marker))
-    (with-current-buffer (marker-buffer org-capture-last-stored-marker)
-      (save-excursion
-        (goto-char org-capture-last-stored-marker)
-        (org-back-to-heading t)
-        (let* ((title (org-get-heading t t t t))
-               (hash (md5 title))
-               (source-props
-                (when (and org-snitch--source-buffer (buffer-live-p org-snitch--source-buffer))
-                  (with-current-buffer org-snitch--source-buffer
-                    (let* ((file (buffer-file-name))
-                           (line (if org-snitch--region-beg-marker
-                                     (line-number-at-pos org-snitch--region-beg-marker)
-                                   (line-number-at-pos))))
-                      (when file
-                        (format "[[file:%s::%d]]"
-                                (file-relative-name file (org-snitch--get-project-root))
-                                line))))))
-               task-num)
-          (org-set-property "ID" hash)
-          (when source-props
-            (org-set-property "SOURCE" source-props))
-          (unless (org-entry-get nil "TASK_NUM")
-            (setq task-num (org-snitch--next-task-num (current-buffer)))
-            (org-set-property "TASK_NUM" (format "%s-%d" org-snitch-user-prefix task-num)))
-          (save-buffer))))))
+  (org-snitch--with-capture-marker
+   (let* ((hash (md5 heading))
+          (source-props
+           (when (and org-snitch--source-buffer (buffer-live-p org-snitch--source-buffer))
+             (with-current-buffer org-snitch--source-buffer
+               (let* ((file (buffer-file-name))
+                      (line (if org-snitch--region-beg-marker
+                                (line-number-at-pos org-snitch--region-beg-marker)
+                              (line-number-at-pos))))
+                 (when file
+                   (format "[[file:%s::%d]]"
+                           (file-relative-name file (org-snitch--get-project-root))
+                           line))))))
+          task-num-str)
+     (org-set-property "ID" hash)
+     (when source-props
+       (org-set-property "SOURCE" source-props))
+     (unless task-num
+       (setq task-num-str (format "%s-%d" org-snitch-user-prefix
+                                  (org-snitch--next-task-num (current-buffer))))
+       (org-set-property "TASK_NUM" task-num-str))
+     (save-buffer))))
 
 (defun org-snitch--next-task-num (buffer)
   "Return the next TASK_NUM integer for the current user prefix."
@@ -384,46 +398,24 @@ hook with an active region, replaces the region with the link."
      ((and in-capture-hook
            org-snitch--source-buffer
            org-snitch--region-beg-marker
-           org-snitch--region-end-marker
-           (markerp org-capture-last-stored-marker)
-           (marker-buffer org-capture-last-stored-marker))
-      (let (id task-num heading parent)
-        (with-current-buffer (marker-buffer org-capture-last-stored-marker)
-          (save-excursion
-            (goto-char org-capture-last-stored-marker)
-            (org-back-to-heading t)
-            (setq id (org-entry-get nil "ID"))
-            (setq task-num (org-entry-get nil "TASK_NUM"))
-            (setq heading (org-get-heading t t t t))
-            (setq parent (save-excursion
-                           (when (org-up-heading-safe)
-                             (upcase (org-get-heading t t t t)))))))
-        (with-current-buffer org-snitch--source-buffer
-          (save-excursion
-            (goto-char org-snitch--region-beg-marker)
-            (delete-region org-snitch--region-beg-marker
-                           org-snitch--region-end-marker)
-            (insert (org-snitch--format-link id task-num heading parent))))))
+           org-snitch--region-end-marker)
+      (org-snitch--with-capture-marker
+       (with-current-buffer org-snitch--source-buffer
+         (save-excursion
+           (goto-char org-snitch--region-beg-marker)
+           (delete-region org-snitch--region-beg-marker
+                          org-snitch--region-end-marker)
+           (insert (org-snitch--format-link id task-num heading parent))))))
 
      ;; 2. Called as a hook but NO region was stored AND we have a valid source buffer
      ((and in-capture-hook org-snitch--source-buffer)
       (when (y-or-n-p "Insert task link at point? ")
-        (let (id task-num heading parent)
-          (with-current-buffer (marker-buffer org-capture-last-stored-marker)
-            (save-excursion
-              (goto-char org-capture-last-stored-marker)
-              (org-back-to-heading t)
-              (setq id (org-entry-get nil "ID"))
-              (setq task-num (org-entry-get nil "TASK_NUM"))
-              (setq heading (org-get-heading t t t t))
-              (setq parent (save-excursion
-                             (when (org-up-heading-safe)
-                               (upcase (org-get-heading t t t t)))))))
-          (with-current-buffer org-snitch--source-buffer
-            (insert (org-snitch--format-link id task-num heading parent)))
-          ;; Nullify source buffer immediately to prevent duplicate runs
-          ;; if the :after-finalize hook executes more than once.
-          (setq org-snitch--source-buffer nil))))
+        (org-snitch--with-capture-marker
+         (with-current-buffer org-snitch--source-buffer
+           (insert (org-snitch--format-link id task-num heading parent)))
+         ;; Nullify source buffer immediately to prevent duplicate runs
+         ;; if the :after-finalize hook executes more than once.
+         (setq org-snitch--source-buffer nil))))
 
      ;; 3. Interactive/fallback: use completing-read only if NOT in capture hook
      ((not in-capture-hook)
