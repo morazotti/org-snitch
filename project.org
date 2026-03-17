@@ -62,3 +62,19 @@ From the code buffer, we could add a way to change the ticket status (like ~C-c 
 :TASK_NUM: 8
 :END:
 Indexes in which file the original capture command was invoked and inserted, enhancing experience.
+** TODO 20260317110019 retirar esse define-key daqui
+:PROPERTIES:
+:ID:       0ad1d8a3179961052799ad44d9e915ce
+:SOURCE:   [[file:org-snitch.el::468]]
+:TASK_NUM: NICOLAS-1
+:END:
+O ideal será sugerir ao usuário que marque seu próprio keybind, e apenas no git-commit.
+Pensei em algo como
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-snitch
+    :hook
+    (git-commit
+     . (lambda () (define-key git-commit-mode-map (kbd "C-c C-t")
+  			    #'org-snitch-magit-insert-task))))
+#+end_src
+Não sei se isso dá certo.
