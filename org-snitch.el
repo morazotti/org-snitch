@@ -462,7 +462,7 @@ Designed to be bound in `git-commit-mode-map'."
          (clean-heading (string-join (cdr (split-string heading)) " ")))
     (insert (format "%s #%s: %s" verb task-num clean-heading))))
 
-
+(defvar git-commit-mode-map)
 
 ;;;###autoload
 (define-minor-mode org-snitch-mode
