@@ -462,9 +462,7 @@ Designed to be bound in `git-commit-mode-map'."
          (clean-heading (string-join (cdr (split-string heading)) " ")))
     (insert (format "%s #%s: %s" verb task-num clean-heading))))
 
-(defvar git-commit-mode-map)
-(with-eval-after-load 'git-commit
-  (define-key git-commit-mode-map (kbd "C-c C-t") #'org-snitch-magit-insert-task))
+
 
 ;;;###autoload
 (define-minor-mode org-snitch-mode

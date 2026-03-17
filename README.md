@@ -55,7 +55,9 @@ You can customize `org-snitch` behavior by setting the following variables **bef
   (("C-c s" . org-snitch-dispatch)
    :map org-snitch-link-mode-map
    ("C-c C-o" . org-open-at-point-global)
-   ("C-c C-d" . org-snitch-mark-done))
+   ("C-c C-d" . org-snitch-mark-done)
+   (:map git-commit-mode-map
+        ("C-c C-t" . org-snitch-magit-insert-task)))
 
   :config
   (org-snitch-setup)
@@ -115,6 +117,12 @@ M-x org-snitch-find-references
 ```
 
 This command lets you select a task via `completing-read`, then leverages `project.el` and `xref` to search your entire codebase for the task's ID. Wait a moment, and an `xref` buffer will pop up displaying the results with file previews across your project.
+
+### Magit / Git Commit Integration
+
+To insert a project task reference directly into a Git commit message (e.g., when using Magit or `vc`), you can bind `org-snitch-magit-insert-task` to a key of your choice in `git-commit-mode-map`, as shown in the previous suggested configuration.
+
+This ensures the keybinding is only active when you are writing a commit message. When invoked, it prompts for an action verb (Fixes, Resolves, etc.) and a task, then inserts a formatted reference (e.g., `Resolves #NICO-1: Fix login issue`) at point.
 
 ## License
 
