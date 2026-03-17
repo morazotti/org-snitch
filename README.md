@@ -55,13 +55,15 @@ You can customize `org-snitch` behavior by setting the following variables **bef
   (("C-c s" . org-snitch-dispatch)
    :map org-snitch-link-mode-map
    ("C-c C-o" . org-open-at-point-global)
-   ("C-c C-d" . org-snitch-mark-done)
-   (:map git-commit-mode-map
-        ("C-c C-t" . org-snitch-magit-insert-task)))
+   ("C-c C-d" . org-snitch-mark-done))
 
   :config
   (org-snitch-setup)
-  (org-snitch-mode 1))
+  (org-snitch-mode 1)
+
+  ;; Add org-snitch-magit-insert-task to git-commit-mode-map
+  (with-eval-after-load 'git-commit
+    (define-key git-commit-mode-map (kbd "C-c C-t") #'org-snitch-magit-insert-task)))
 ```
 
 > **Note:** Enabling `org-snitch-mode` automatically turns on `org-snitch-link-mode` for all your programming modes (`prog-mode`), ensuring that task IDs found in your source code comments are seamlessly rendered as clean `[Task Title]` overlays.

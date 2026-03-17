@@ -127,8 +127,7 @@ ticket collisions in multi-user setups without the need of a central server."
     (setq org-capture-templates-contexts
           (seq-remove (lambda (x) (member (car x) keys)) org-capture-templates-contexts)))
   (setq org-capture-templates (append org-capture-templates (org-snitch--generated-templates)))
-  (setq org-capture-templates-contexts (append org-capture-templates-contexts (org-snitch--generated-contexts)))
-  (defvar git-commit-mode-map))
+  (setq org-capture-templates-contexts (append org-capture-templates-contexts (org-snitch--generated-contexts))))
 
 (defvar org-snitch--source-buffer nil
   "Buffer where `org-capture' was invoked.")
