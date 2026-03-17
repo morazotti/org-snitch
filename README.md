@@ -126,6 +126,8 @@ To insert a project task reference directly into a Git commit message (e.g., whe
 
 This ensures the keybinding is only active when you are writing a commit message. When invoked, it prompts for an action verb (Fixes, Resolves, etc.) and a task, then inserts a formatted reference (e.g., `Resolves #NICO-1: Fix login issue`) at point.
 
+<!--  ISSUES: (#NICOLAS-2) [[id:cbb71acbc5e64dd358259c120bea7494][Add a non-hacky way to map key to git-commit]]  -->
+
 ## License
 
 This project is licensed under the GNU General Public License v3.0 or later. See the [LICENSE](LICENSE) file for details.

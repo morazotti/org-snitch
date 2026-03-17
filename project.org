@@ -5,6 +5,14 @@
 :TASK_NUM: 1
 :END:
 Whenever I capture without a region, it does not generate ids and task nums
+** TODO 20260317152606 Add a non-hacky way to map key to git-commit
+:PROPERTIES:
+:ID:       cbb71acbc5e64dd358259c120bea7494
+:TASK_NUM: NICOLAS-2
+:END:
+In the last revision, we moved ~with-eval-after-load~ to user configuration, once it is needed to check whether ~git-commit~ was loaded. However, this is extremely hacky, and a better solution is needed.
+
+
 * Notes
 * Tasks
 ** DONE 20260311102020 Add a way to insert project links
@@ -62,7 +70,7 @@ From the code buffer, we could add a way to change the ticket status (like ~C-c 
 :TASK_NUM: 8
 :END:
 Indexes in which file the original capture command was invoked and inserted, enhancing experience.
-** TODO 20260317110019 retirar esse define-key daqui
+** DONE 20260317110019 retirar esse define-key daqui
 :PROPERTIES:
 :ID:       0ad1d8a3179961052799ad44d9e915ce
 :SOURCE:   [[file:org-snitch.el::468]]
