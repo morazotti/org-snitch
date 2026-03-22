@@ -4,7 +4,7 @@
 
 ;; Author: Nícolas Morazotti <nicolas.morazotti@gmail.com>
 ;; Maintainer: Nícolas Morazotti <nicolas.morazotti@gmail.com>
-;; Version: 0.2.1
+;; Version: 1.0.0
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: org, project, outlines
 ;; URL: https://github.com/morazotti/org-snitch
@@ -27,7 +27,8 @@
 ;;; Commentary:
 
 ;; Provides project-specific org-capture utilizing project.el.
-;; Similar to tsod's snitch library written in Go.
+;; Similar to tsod's snitch (https://github.com/tsoding/snitch)
+;; library written in Go.
 
 ;;; Code:
 
@@ -37,7 +38,7 @@
 (require 'rx)
 
 (defgroup org-snitch nil
-  "Project-specific org-capture and link faces."
+  "Use org-capture to locally collect project details and tickets."
   :group 'org)
 
 (defcustom org-snitch-target-file "project.org"
@@ -71,7 +72,7 @@ than the parent project.  Internally, this let-binds
 (defcustom org-snitch-user-prefix (upcase (user-login-name))
   "User-specific prefix appended to automatically generated TASK_NUM.
 Defaults to the uppercase login name of the current user. E.g., if set
-to \"NICO\", tasks will be numbered as NICO-1, NICO-2 to avoid
+to \"USER\", tasks will be numbered as USER-1, USER-2 to avoid
 ticket collisions in multi-user setups without the need of a central server."
   :type 'string
   :group 'org-snitch)
